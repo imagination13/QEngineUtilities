@@ -3,7 +3,6 @@
 
 #include "QMetaContainer"
 #include "IPropertyHandleImpl.h"
-#include "DetailView/QDetailLayoutBuilder.h"
 
 class QSequentialPropertyHandleImpl: public IPropertyHandleImpl
 {
@@ -16,9 +15,13 @@ public:
 	void removeItem(int InIndex);
 
 protected:
-	void generateChildrenRow(QRowLayoutBuilder* Builder)  override;
+	void generateChildrenRow(QRowLayoutBuilder* Builder) override;
 	QWidget* generateValueWidget() override;
+
+	virtual QQuickItem* createValueEditor(QQuickItem* inParent) override;
+
 	QPropertyHandle* createChildHandle(const QString& inSubName) override;
+
 private:
 	QMetaSequence mMetaSequence;
 };

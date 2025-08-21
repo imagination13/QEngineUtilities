@@ -1,9 +1,9 @@
 #include "DetailView/PropertyHandleImpl/QAssociativePropertyHandleImpl.h"
-#include <QAssociativeIterable>
-#include "DetailView/QDetailLayoutBuilder.h"
-#include "Widgets/QSvgButton.h"
-#include "QBoxLayout"
+#include "DetailView/Widget/QDetailLayoutBuilder.h"
 #include "DetailView/QPropertyHandle.h"
+#include "Widgets/QSvgButton.h"
+#include <QAssociativeIterable>
+#include <QBoxLayout>
 
 QAssociativePropertyHandleImpl::QAssociativePropertyHandleImpl(QPropertyHandle* InHandle)
 	:IPropertyHandleImpl(InHandle) {
@@ -50,6 +50,10 @@ QWidget* QAssociativePropertyHandleImpl::generateValueWidget() {
 	valueContentLayout->addWidget(btAppend);
 	mHandle->generateAttachButtonWidget(valueContentLayout);
 	return valueContent;
+}
+
+QQuickItem* QAssociativePropertyHandleImpl::createValueEditor(QQuickItem* inParent) {
+	return nullptr;
 }
 
 QPropertyHandle* QAssociativePropertyHandleImpl::createChildHandle(const QString& inKey) {

@@ -1,4 +1,4 @@
-﻿#ifndef QVideoRenderPass_h__
+#ifndef QVideoRenderPass_h__
 #define QVideoRenderPass_h__
 
 #include "Render/RenderGraph/IRenderPassBuilder.h"
@@ -31,7 +31,12 @@ public:
 
 	void updateFrame(const QVideoFrame& inFrame);
 	void updateTextures(QRhi* rhi, QRhiResourceUpdateBatch* rub);
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
 	void rebuildVideoShader();
+#else
+	void rebuildVideoShader(QRhi* rhi);
+#endif
+	
 private:
 	std::unique_ptr<QVideoFrameTextures> mFrameTextures;
 	struct RTResource {

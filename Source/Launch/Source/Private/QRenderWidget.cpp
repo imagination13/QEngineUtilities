@@ -1,4 +1,4 @@
-﻿#include "QRenderWidget.h"
+#include "QRenderWidget.h"
 #include "QBoxLayout"
 #include "QSplitter"
 #include "qevent.h"
@@ -7,7 +7,7 @@
 #include <QWindow>
 
 #ifdef QENGINE_WITH_EDITOR
-#include "DetailView/QDetailView.h"
+#include "DetailView/Widget/QDetailView.h"
 #include "Utils/QEngineUndoStack.h"
 #endif
 

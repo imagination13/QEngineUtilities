@@ -4,7 +4,7 @@
 #include <QSharedPointer>
 #include "IDetailLayoutBuilder.h"
 
-class QENGINEEDITOR_API IDetailCustomization :public  QEnableSharedFromThis<IDetailCustomization> {
+class QENGINEEDITOR_API IDetailCustomization : public QEnableSharedFromThis<IDetailCustomization> {
 public:
 	virtual ~IDetailCustomization(){}
 

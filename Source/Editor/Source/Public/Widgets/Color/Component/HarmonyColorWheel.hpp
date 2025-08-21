@@ -51,7 +51,7 @@ public:
 	 * @param editable     Whether this harmony should be editable
 	 * @returns Index of newly added harmony
 	 */
-	unsigned addHarmony(double hue_diff, bool editable);
+	unsigned int addHarmony(double hue_diff, bool editable);
 
 	/**
 	 * @brief Add symmetric harmony color
@@ -59,7 +59,7 @@ public:
 	 * @returns Index of newly added harmony
 	 * Editability is inherited from symmetric editor
 	 */
-	unsigned addSymmetricHarmony(unsigned relative_to);
+	unsigned int addSymmetricHarmony(unsigned relative_to);
 
 	/**
 	 * @brief Add opposite harmony color
@@ -67,7 +67,7 @@ public:
 	 * @returns Index of newly added harmony
 	 * Editability is inherited from opposite editor
 	 */
-	unsigned addOppositeHarmony(unsigned relative_to);
+	unsigned int addOppositeHarmony(unsigned relative_to);
 
 Q_SIGNALS:
 	/**

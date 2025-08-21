@@ -70,7 +70,7 @@ void QDynamicMeshRenderComponent::onRebuildResource() {
 			}
 			batch->updateDynamicBuffer(mVertexBuffer.get(), 0, sizeof(Vertex) * mVertices.size(), mVertices.data());
 		}
-		QMatrix4x4 M = getModelMatrix() ;
+		QMatrix4x4 M = getModelMatrix();
 		QMatrix4x4 MVP = ctx.projectionMatrixWithCorr * ctx.viewMatrix * M;
 		blocks["Transform"]->setParamValue("MVP", QVariant::fromValue(MVP.toGenericMatrix<4, 4>()));
 		blocks["Transform"]->setParamValue("M", QVariant::fromValue(M.toGenericMatrix<4, 4>()));

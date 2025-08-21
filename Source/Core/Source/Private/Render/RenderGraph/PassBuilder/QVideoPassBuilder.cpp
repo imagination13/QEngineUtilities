@@ -1,4 +1,4 @@
-﻿#include "QVideoPassBuilder.h"
+#include "QVideoPassBuilder.h"
 #include <private/qvideotexturehelper_p.h>
 #include <private/qmemoryvideobuffer_p.h>
 #include <QFile>
@@ -28,6 +28,7 @@ static const float g_quad[] = {
 	1.f, -1.f,    1.f, 1.f,
 	1.f, 1.f,     0.f, 1.f
 };
+
 QVideoPassBuilder::QVideoPassBuilder()
 	: mPlayer(new QMediaPlayer)
 	, mSink(new QVideoSink)
@@ -144,7 +145,12 @@ void QVideoPassBuilder::execute(QRhiCommandBuffer* cmdBuffer) {
 	QMatrix4x4 transform;
 	transform.scale(xscale, yscale);
 	QByteArray uniformData;
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
 	QVideoTextureHelper::updateUniformData(&uniformData, mCurrentFrame.surfaceFormat(), mCurrentFrame, transform, 1.f, 100);
+#else
+	QVideoTextureHelper::updateUniformData(&uniformData, cmdBuffer->rhi(), mCurrentFrame.surfaceFormat(), mCurrentFrame, transform, 1.f, 100);
+#endif
 	batch->updateDynamicBuffer(mUniformBuffer.get(), 0, uniformData.size(), uniformData.constData());
 	cmdBuffer->resourceUpdate(batch);	
 
@@ -175,19 +181,36 @@ void QVideoPassBuilder::updateTextures(QRhi* rhi, QRhiResourceUpdateBatch* rub) 
 	if (!mCurrentFrame.isValid())
 		mCurrentFrame = QVideoFrame(new QMemoryVideoBuffer(QByteArray{ 4, 0 }, 4),
 		QVideoFrameFormat(QSize(1, 1), QVideoFrameFormat::Format_RGBA8888));
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
 	mFrameTextures = QVideoTextureHelper::createTextures(mCurrentFrame, rhi, rub, std::move(mFrameTextures));
+#else
+	mFrameTextures = QVideoTextureHelper::createTextures(mCurrentFrame, *rhi, *rub, std::move(mFrameTextures));
+#endif
 	if (!mFrameTextures)
 		return;
 	auto fmt = mCurrentFrame.surfaceFormat();
 	if (fmt != mFormat) {
 		mFormat = fmt;
-		rebuildVideoShader();
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
+	rebuildVideoShader();
+#else
+	rebuildVideoShader(rhi);
+#endif
 	}	
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
 void QVideoPassBuilder::rebuildVideoShader() {
 	mVideoVS = getShader(QVideoTextureHelper::vertexShaderFileName(mFormat));
 	Q_ASSERT(mVideoVS.isValid());
 	mVideoFS = getShader(QVideoTextureHelper::fragmentShaderFileName(mFormat, QRhiSwapChain::Format::SDR));
 	Q_ASSERT(mVideoFS.isValid());
 }
+#else
+void QVideoPassBuilder::rebuildVideoShader(QRhi* rhi) {
+	mVideoVS = getShader(QVideoTextureHelper::vertexShaderFileName(mFormat));
+	Q_ASSERT(mVideoVS.isValid());
+	mVideoFS = getShader(QVideoTextureHelper::fragmentShaderFileName(mFormat, rhi, QRhiSwapChain::SDR));
+	Q_ASSERT(mVideoFS.isValid());
+}
+#endif

@@ -4,10 +4,10 @@
 #include <qmath.h>
 #include <QVulkanFunctions>
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
 #include "qrhivulkan_p_p.h"
 #else
-#include "private/qrhivulkan_p_p.h"
+#include "private/qrhivulkan_p.h"
 #endif
 
 #define VMA_IMPLEMENTATION
@@ -231,11 +231,11 @@ void executeBufferHostWritesForSlot(QVkBuffer* bufD, int slot, QRhiVulkan* rhiD)
 	}
 	int changeBegin = -1;
 	int changeEnd = -1;
-	for (const QVkBuffer::DynamicUpdate& u : qAsConst(bufD->pendingDynamicUpdates[slot])) {
+	for (const QVkBuffer::DynamicUpdate& u : std::as_const(bufD->pendingDynamicUpdates[slot])) {
 		memcpy(static_cast<char*>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
-		if (changeBegin == -1 || u.offset < changeBegin)
+		if (changeBegin == -1 || static_cast<int>(u.offset) < changeBegin)
 			changeBegin = u.offset;
-		if (changeEnd == -1 || u.offset + u.data.size() > changeEnd)
+		if (changeEnd == -1 || u.offset + static_cast<int>(u.data.size()) > changeEnd)
 			changeEnd = u.offset + u.data.size();
 	}
 	vmaUnmapMemory(toVmaAllocator(rhiD->allocator), a);
@@ -534,7 +534,7 @@ void QRhiVulkanExHelper::setShaderResources(QRhiResource *pipeline, QRhiCommandB
 	}
 
 	QVkShaderResourceBindings* srbD = QRHI_RES(QVkShaderResourceBindings, srb);
-	const int descSetIdx = srbD->hasSlottedResource ? rhi->currentFrameSlot : 0;
+	const int descSetIdx = rhi->currentFrameSlot;
 	auto& descSetBd(srbD->boundResourceData[descSetIdx]);
 	bool rewriteDescSet = false;
 
@@ -664,7 +664,7 @@ void QRhiVulkanExHelper::setShaderResources(QRhiResource *pipeline, QRhiCommandB
 
 	// make sure the descriptors for the correct slot will get bound.
 	// also, dynamic offsets always need a bind.
-	const bool forceRebind = (srbD->hasSlottedResource && cbD->currentDescSetSlot != descSetIdx) || srbD->hasDynamicOffset;
+	const bool forceRebind = (cbD->currentDescSetSlot != descSetIdx) || srbD->hasDynamicOffset;
 
 	const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
 

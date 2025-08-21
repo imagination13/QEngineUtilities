@@ -3,6 +3,7 @@
 
 #include "QObject"
 #include "QVariant"
+#include "QQuickItem"
 #include "QUndoStack"
 #include "QEngineEditorAPI.h"
 
@@ -10,6 +11,10 @@ class IPropertyHandleImpl;
 class QRowLayoutBuilder;
 class QEngineUndoEntry;
 class QHBoxLayout;
+class QEnumPropertyHandleImpl;
+class QObjectPropertyHandleImpl;
+class QAssociativePropertyHandleImpl;
+class QSequentialPropertyHandleImpl;
 
 class QENGINEEDITOR_API QPropertyHandle: public QObject{
 	Q_OBJECT
@@ -20,6 +25,16 @@ public:
 	using Getter = std::function<QVariant()>;
 	using Setter = std::function<void(QVariant)>;
 
+	enum PropertyType {
+		Unknown,
+		RawType,
+		Enum,
+		Sequential,
+		Associative,
+		Object
+	};
+
+	static PropertyType ParseType(QMetaType inType);
 	static QPropertyHandle* Find(const QObject* inParent, const QString& inPropertyPath);
 	static QPropertyHandle* FindOrCreate(QObject* inObject, const QString& inPropertyPath);
 	static QPropertyHandle* FindOrCreate(QObject* inParent, QMetaType inType, QString inPropertyPath, Getter inGetter, Setter inSetter);
@@ -33,6 +48,11 @@ public:
 	QString getPath();
 	QString getSubPath(const QString& inSubName);
 
+	QEnumPropertyHandleImpl* asEnum();
+	QObjectPropertyHandleImpl* asObject();
+	QAssociativePropertyHandleImpl* asAssociative();
+	QSequentialPropertyHandleImpl* asSequential();
+
 	bool hasMetaData(const QString& inName) const;
 	QVariant getMetaData(const QString& inName) const;
 	const QVariantHash& getMetaData() const;
@@ -40,6 +60,10 @@ public:
 
 	QPropertyHandle* findChildHandle(const QString& inSubName);
 	QPropertyHandle* createChildHandle(const QString& inSubName);
+
+	QQuickItem* createNameEditor(QQuickItem* inParent);
+	QQuickItem* createValueEditor(QQuickItem* inParent);
+
 	QWidget* generateNameWidget();
 	QWidget* generateValueWidget();
 	void generateChildrenRow(QRowLayoutBuilder* Builder);
@@ -71,10 +95,12 @@ Q_SIGNALS:
 	void asValueChanged();
 	void asRequestRebuildRow();
 	void asChildEvent(QChildEvent*);
+
 protected:
 	QPropertyHandle(QObject* inParent, QMetaType inType, QString inPropertyPath, Getter inGetter, Setter inSetter);
 	void resloveMetaData();
 	bool eventFilter(QObject* object, QEvent* event) override;
+
 protected:
 	QSharedPointer<IPropertyHandleImpl> mImpl;
 	QMetaType mType;

@@ -1,7 +1,10 @@
 #include "DetailView/PropertyHandleImpl/QObjectPropertyHandleImpl.h"
-#include <qsequentialiterable.h>
+#include "DetailView/Widget/IDetailLayoutBuilder.h"
+#include "DetailView/Widget/QDetailLayoutBuilder.h"
+#include "DetailView/Widget/QDetailViewRow.h"
 #include "DetailView/QPropertyHandle.h"
-#include "QRegularExpression"
+#include <QRegularExpression>
+#include <QSequentialIterator>
 #include <QMetaProperty>
 #include <QThread>
 
@@ -30,6 +33,13 @@ QObjectPropertyHandleImpl::QObjectPropertyHandleImpl(QPropertyHandle* InHandle)
 		mMetaObject = metaType.metaObject();
 	}
 	mOwnerObject = mHandle->parent();
+}
+
+QObject* QObjectPropertyHandleImpl::getObject()
+{
+	if (mMetaObject->inherits(&QObject::staticMetaObject))
+		return static_cast<QObject*>(mObjectPtr);
+	return nullptr;
 }
 
 void QObjectPropertyHandleImpl::refreshObjectPtr() {
@@ -71,6 +81,11 @@ void QObjectPropertyHandleImpl::generateChildrenRow(QRowLayoutBuilder* Builder) 
 	Context.OwnerObject = mHandle->parent();
 	Context.PrePath = mHandle->getPath();
 	Builder->addObject(Context);
+}
+
+QQuickItem* QObjectPropertyHandleImpl::createValueEditor(QQuickItem* inParent)
+{
+	return nullptr;
 }
 
 QPropertyHandle* QObjectPropertyHandleImpl::createChildHandle(const QString& inSubName) {

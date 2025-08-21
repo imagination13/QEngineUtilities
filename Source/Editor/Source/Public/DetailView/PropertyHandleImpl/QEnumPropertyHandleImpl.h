@@ -6,10 +6,14 @@
 class QEnumPropertyHandleImpl: public IPropertyHandleImpl {
 public:
 	QEnumPropertyHandleImpl(QPropertyHandle* InHandle);
+
 protected:
 	QWidget* generateValueWidget() override;
+	QQuickItem* createValueEditor(QQuickItem* inParent) override;
+
 private:
 	QHash<QString, int> mNameToValueMap;
+	QList<QString> mKeys;
 };
 
 

@@ -7,12 +7,19 @@
 class QObjectPropertyHandleImpl : public IPropertyHandleImpl {
 public:
 	QObjectPropertyHandleImpl(QPropertyHandle* InHandle);
+	QObject* getObject();
+
 protected:
-	QPropertyHandle* findChildHandle(const QString& inSubName) override;
 	QWidget* generateValueWidget() override;
 	void generateChildrenRow(QRowLayoutBuilder* Builder)  override;
+
+	QQuickItem* createValueEditor(QQuickItem* inParent) override;
+
+	QPropertyHandle* findChildHandle(const QString& inSubName) override;
 	QPropertyHandle* createChildHandle(const QString& inSubName) override;
+	
 	void refreshObjectPtr();
+
 private:
 	QVariant mObjectHolder;
 	void* mObjectPtr = nullptr;

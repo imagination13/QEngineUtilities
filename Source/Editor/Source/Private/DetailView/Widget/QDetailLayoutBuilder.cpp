@@ -1,6 +1,6 @@
-#include "DetailView/QDetailLayoutBuilder.h"
-#include "DetailView/QDetailView.h"
-#include "DetailView/QDetailViewRow.h"
+#include "DetailView/Widget/QDetailLayoutBuilder.h"
+#include "DetailView/Widget/QDetailView.h"
+#include "DetailView/Widget/QDetailViewRow.h"
 
 
 QDetailViewRow* QDetailLayoutBuilder::newChildRow() {

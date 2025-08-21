@@ -5,13 +5,13 @@
 #include <QMetaProperty>
 #include <QRegularExpression>
 #include <QTime>
-#include "DetailView/QDetailViewManager.h"
-#include "DetailView/PropertyHandleImpl/QAssociativePropertyHandleImpl.h"
-#include "DetailView/PropertyHandleImpl/QSequentialPropertyHandleImpl.h"
+#include "DetailView/Widget/QDetailViewManager.h"
 #include "Utils/QEngineUndoStack.h"
 #include "Widgets/QElideLabel.h"
 #include "DetailView/PropertyHandleImpl/QEnumPropertyHandleImpl.h"
 #include "DetailView/PropertyHandleImpl/QObjectPropertyHandleImpl.h"
+#include "DetailView/PropertyHandleImpl/QAssociativePropertyHandleImpl.h"
+#include "DetailView/PropertyHandleImpl/QSequentialPropertyHandleImpl.h"
 
 QPropertyHandle::QPropertyHandle(QObject* inParent, QMetaType inType, QString inPropertyPath, Getter inGetter, Setter inSetter)
 	: mType(inType)
@@ -22,33 +22,27 @@ QPropertyHandle::QPropertyHandle(QObject* inParent, QMetaType inType, QString in
 	setObjectName(inPropertyPath);
 	resloveMetaData();
 	mInitialValue = inGetter();
-	if (QMetaType::canConvert(inType, QMetaType::fromType<QVariantList>())
-		&& !QMetaType::canConvert(inType, QMetaType::fromType<QString>())
-		) {
-		mImpl.reset( new QSequentialPropertyHandleImpl(this));
+
+	PropertyType type = ParseType(inType);
+	if (type == PropertyType::Unknown) {
+		mImpl.reset(new IPropertyHandleImpl(this));
 	}
-	else if(QMetaType::canConvert(inType, QMetaType::fromType<QVariantMap>())){
-		mImpl.reset(new QAssociativePropertyHandleImpl(this));
+	else if (type == PropertyType::RawType) {
+		mImpl.reset(new IPropertyHandleImpl(this));
 	}
-	else if(inType.flags() & QMetaType::IsEnumeration){
+	else if (type == PropertyType::Object) {
+		mImpl.reset(new QObjectPropertyHandleImpl(this));
+	}
+	else if (type == PropertyType::Enum) {
 		mImpl.reset(new QEnumPropertyHandleImpl(this));
 	}
-	else{
-		QRegularExpression reg("QSharedPointer\\<(.+)\\>");
-		QRegularExpressionMatch match = reg.match(inType.name(), 0, QRegularExpression::MatchType::PartialPreferCompleteMatch, QRegularExpression::AnchorAtOffsetMatchOption);
-		QStringList matchTexts = match.capturedTexts();
-		QMetaType innerMetaType;
-		if (!matchTexts.isEmpty()) {
-			QString metaTypeName = matchTexts.back();
-			innerMetaType = QMetaType::fromName(metaTypeName.toLocal8Bit());
-		}
-		if(innerMetaType.metaObject()||inType.metaObject()){
-			mImpl.reset(new QObjectPropertyHandleImpl(this));
-		}
-		else{
-			mImpl.reset(new IPropertyHandleImpl(this));
-		}
+	else if (type == PropertyType::Associative) {
+		mImpl.reset(new QAssociativePropertyHandleImpl(this));
 	}
+	else if (type == PropertyType::Sequential) {
+		mImpl.reset(new QSequentialPropertyHandleImpl(this));
+	}
+
 	QEngineUndoEntry* UndoEntry = inParent->findChild<QEngineUndoEntry*>(QString(), Qt::FindDirectChildrenOnly);
 	if (UndoEntry != nullptr) {
 		mUndoEntry = UndoEntry;
@@ -89,6 +83,36 @@ bool QPropertyHandle::eventFilter(QObject* object, QEvent* event)
 			Q_EMIT asChildEvent(childEvent);
 	}
 	return QObject::eventFilter(object, event);
+}
+
+QPropertyHandle::PropertyType QPropertyHandle::ParseType(QMetaType inType)
+{
+	if (QMetaType::canConvert(inType, QMetaType::fromType<QVariantList>())
+		&& !QMetaType::canConvert(inType, QMetaType::fromType<QString>())
+		) {
+		return PropertyType::Sequential;
+	}
+	else if (QMetaType::canConvert(inType, QMetaType::fromType<QVariantMap>())) {
+		return PropertyType::Associative;
+	}
+	else if (inType.flags() & QMetaType::IsEnumeration) {
+		return PropertyType::Enum;
+	}
+	else {
+		QRegularExpression reg("QSharedPointer\\<(.+)\\>");
+		QRegularExpressionMatch match = reg.match(inType.name(), 0, QRegularExpression::MatchType::PartialPreferCompleteMatch, QRegularExpression::AnchorAtOffsetMatchOption);
+		QStringList matchTexts = match.capturedTexts();
+		QMetaType innerMetaType;
+		if (!matchTexts.isEmpty()) {
+			QString metaTypeName = matchTexts.back();
+			innerMetaType = QMetaType::fromName(metaTypeName.toLocal8Bit());
+		}
+		if (innerMetaType.metaObject() || inType.metaObject()) {
+			return PropertyType::Object;
+		}
+		return PropertyType::RawType;
+	}
+	return PropertyType::Unknown;
 }
 
 QPropertyHandle* QPropertyHandle::Find(const QObject* inParent, const QString& inPropertyPath) {
@@ -241,6 +265,26 @@ QString QPropertyHandle::getSubPath(const QString& inSubName){
 	return getPath() + "." + inSubName;
 }
 
+QEnumPropertyHandleImpl* QPropertyHandle::asEnum()
+{
+	return static_cast<QEnumPropertyHandleImpl*>(mImpl.get());;
+}
+
+QObjectPropertyHandleImpl* QPropertyHandle::asObject()
+{
+	return static_cast<QObjectPropertyHandleImpl*>(mImpl.get());
+}
+
+QAssociativePropertyHandleImpl* QPropertyHandle::asAssociative()
+{
+	return static_cast<QAssociativePropertyHandleImpl*>(mImpl.get());
+}
+
+QSequentialPropertyHandleImpl* QPropertyHandle::asSequential()
+{
+	return static_cast<QSequentialPropertyHandleImpl*>(mImpl.get());
+}
+
 bool QPropertyHandle::hasMetaData(const QString& inName) const
 {
 	return mMetaData.contains(inName);
@@ -260,6 +304,16 @@ QPropertyHandle* QPropertyHandle::findChildHandle(const QString& inSubName) {
 
 QPropertyHandle* QPropertyHandle::createChildHandle(const QString& inSubName) {
 	return mImpl->createChildHandle(inSubName);
+}
+
+QQuickItem* QPropertyHandle::createNameEditor(QQuickItem* inParent)
+{
+	return mImpl->createNameEditor(inParent);
+}
+
+QQuickItem* QPropertyHandle::createValueEditor(QQuickItem* inParent)
+{
+	return mImpl->createValueEditor(inParent);
 }
 
 QWidget* QPropertyHandle::generateNameWidget() {

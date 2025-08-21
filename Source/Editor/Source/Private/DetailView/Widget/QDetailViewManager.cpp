@@ -1,4 +1,4 @@
-#include "DetailView/QDetailViewManager.h"
+#include "DetailView/Widget/QDetailViewManager.h"
 #include "Widgets/Color/QColorButton.h"
 #include "Widgets/QFilePathBox.h"
 #include "Widgets/QHoverTextEdit.h"
@@ -107,7 +107,7 @@ QDetailViewManager::QDetailViewManager()
 void QDetailViewManager::registerBuiltIn() {
 	registerCustomPropertyValueWidgetCreator(QMetaType::fromType<bool>(),[](QPropertyHandle* InHandler) {
 		QCheckBox* checkBox = new QCheckBox;
-		InHandler->bind(checkBox, &QCheckBox::stateChanged,
+		InHandler->bind(checkBox, &QCheckBox::checkStateChanged,
 			[checkBox]() {
 			return checkBox->checkState() == Qt::Checked;
 		},

@@ -36,7 +36,7 @@ void QColorButton::paintEvent(QPaintEvent* event)
 void QColorButton::mousePressEvent(QMouseEvent* event) {
 	QHoverWidget::mousePressEvent(event);
 	QRect geom = rect();
-	geom.moveTopLeft(event->globalPos());
+	geom.moveTopLeft(event->globalPosition().toPoint());
 	QtColorDialog::CreateAndShow(mColor, geom);
 	QObject::connect(QtColorDialog::Current, &QtColorDialog::asColorChanged, this, [&](const QColor& color) {
 		setColor(color);

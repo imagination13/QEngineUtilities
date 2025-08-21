@@ -1,11 +1,11 @@
-#include "DetailView/IDetailLayoutBuilder.h"
-#include "DetailView/QDetailViewRow.h"
-#include "DetailView/QDetailLayoutBuilder.h"
-#include "DetailView/QDetailViewManager.h"
+#include "DetailView/Widget/IDetailLayoutBuilder.h"
+#include "DetailView/Widget/QDetailViewRow.h"
+#include "DetailView/Widget/QDetailLayoutBuilder.h"
+#include "DetailView/Widget/QDetailViewManager.h"
+#include "DetailView/Widget/QDetailView.h"
 #include "DetailView/QPropertyHandle.h"
 #include "QMetaProperty"
 #include "Widgets/QElideLabel.h"
-#include "DetailView/QDetailView.h"
 
 class HeaderRowBuilder: public IHeaderRowBuilder{
 public:

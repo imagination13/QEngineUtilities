@@ -101,7 +101,7 @@ public:
 
 	Q_PROPERTY(QMap<QString, QColor> ColorMap READ GetColorMap WRITE SetColorMap)
 
-		QMap<QString, QColor> GetColorMap() const { return ColorMap; }
+	QMap<QString, QColor> GetColorMap() const { return ColorMap; }
 	void SetColorMap(QMap<QString, QColor> val) {
 		ColorMap = val;
 		qDebug() << "ColorMap: " << ColorMap;

@@ -5,7 +5,6 @@
 #include "IDetailLayoutBuilder.h"
 #include "QPropertyHandle.h"
 
-
 class QENGINEEDITOR_API IHeaderRowBuilder{
 public:
 	virtual void setNameValueWidget(QWidget* InName, QWidget* InValue) = 0;

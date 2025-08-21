@@ -1,7 +1,7 @@
 #ifndef QDETAILAYOUTBUILDER_H
 #define QDETAILAYOUTBUILDER_H
 
-#include "DetailView/IDetailLayoutBuilder.h"
+#include "DetailView/Widget/IDetailLayoutBuilder.h"
 
 class QENGINEEDITOR_API QDetailLayoutBuilder: public IDetailLayoutBuilder{
 public:

@@ -1,9 +1,9 @@
 #include "DetailView/PropertyHandleImpl/QSequentialPropertyHandleImpl.h"
-#include <qsequentialiterable.h>
-#include "DetailView/QDetailLayoutBuilder.h"
+#include "DetailView/Widget/QDetailLayoutBuilder.h"
+#include "DetailView/Widget/QDetailViewManager.h"
 #include "Widgets/QSvgButton.h"
-#include "QBoxLayout"
-#include "DetailView/QDetailViewManager.h"
+#include <QSequentialIterator>
+#include <QBoxLayout>
 
 QSequentialPropertyHandleImpl::QSequentialPropertyHandleImpl(QPropertyHandle* InHandle)
 	:IPropertyHandleImpl(InHandle) {
@@ -41,6 +41,11 @@ QWidget* QSequentialPropertyHandleImpl::generateValueWidget() {
 	valueContentLayout->addWidget(btAppend);
 	mHandle->generateAttachButtonWidget(valueContentLayout);
 	return valueContent;
+}
+
+QQuickItem* QSequentialPropertyHandleImpl::createValueEditor(QQuickItem* inParent)
+{
+	return nullptr;
 }
 
 QPropertyHandle* QSequentialPropertyHandleImpl::createChildHandle(const QString& inSubName) {

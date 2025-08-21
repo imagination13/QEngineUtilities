@@ -1,16 +1,17 @@
-#include "DetailView/QDetailView.h"
-#include "DetailView/QDetailViewRow.h"
+#include "DetailView/Widget/QDetailView.h"
+#include "DetailView/Widget/QDetailViewRow.h"
+#include "DetailView/Widget/QDetailViewManager.h"
+#include "DetailView/Widget/QDetailLayoutBuilder.h"
 #include "Widgets/QElideLabel.h"
-#include "DetailView/QDetailViewManager.h"
-#include "DetailView/QDetailLayoutBuilder.h"
 #include "QEngineEditorStyleManager.h"
+#include "QEngineUndoStack.h"
+#include "QAbstractAnimation"
+
 #include <QApplication>
 #include <QLabel>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QQueue>
-#include "QEngineUndoStack.h"
-#include "QAbstractAnimation"
 
 
 QDetailView::QDetailView()
