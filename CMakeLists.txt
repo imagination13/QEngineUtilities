@@ -1,8 +1,6 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 
 project(QEngineUtilities)
-
-cmake_minimum_required(VERSION 3.12)
 
 include(GenerateExportHeader)
 
@@ -121,8 +119,7 @@ macro(qengine_add_plugin PLUGIN_NAME)
     qengine_add_target(${PLUGIN_NAME} QENGINE_PLUGIN ${ARGN})
 endmacro()
 
-
-macro(qengine_make_copy_target TARGET_NAME)
+macro(qengine_make_copy_target TARGET_NAME) 
     get_property(QENGINE_TARGET_LIST GLOBAL PROPERTY QENGINE_TARGET_LIST)
     set(QENGINE_TARGET_FILE_GENEX "")
     set(QENGINE_PLUGIN_TARGET_FILE_GENEX "")
@@ -132,15 +129,26 @@ macro(qengine_make_copy_target TARGET_NAME)
         if(QENGINE_PLUGIN)
             list(APPEND QENGINE_PLUGIN_TARGET_FILE_GENEX "$<TARGET_FILE:${QENGINE_TARGET}>")
         else()
+            message(STATUS "$<TARGET_FILE:${QENGINE_TARGET}>")
             list(APPEND QENGINE_TARGET_FILE_GENEX "$<TARGET_FILE:${QENGINE_TARGET}>")
         endif()
     endforeach()
 
     add_custom_target(${TARGET_NAME}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Plugins/
-        COMMAND ${CMAKE_COMMAND} -E copy ${QENGINE_TARGET_FILE_GENEX} ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND ${CMAKE_COMMAND} -E copy ${QENGINE_PLUGIN_TARGET_FILE_GENEX} ${CMAKE_CURRENT_BINARY_DIR}/Plugins/
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/Plugins/
     )
+
+    if(QENGINE_TARGET_FILE_GENEX)
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${QENGINE_TARGET_FILE_GENEX} ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
+        )
+    endif()
+
+    if(QENGINE_PLUGIN_TARGET_FILE_GENEX)
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${QENGINE_PLUGIN_TARGET_FILE_GENEX} ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/Plugins/
+        )
+    endif()
 endmacro()
 
 add_subdirectory(3rdParty)
